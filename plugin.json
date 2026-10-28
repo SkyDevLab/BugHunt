@@ -1,0 +1,12 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "bughunt-ai",
+  "displayName": "BugHunt AI",
+  "version": "1.0.0",
+  "description": "Ticket-to-Bug autonomous QA Agent for Antigravity. Interprets Jira/ADO tickets, explores web apps with Playwright, captures screenshot evidence, reproduces defects, and generates actionable bug reports.",
+  "suggestedPrompts": [
+    "Use BugHunt AI to test this ticket: User profile update at http://localhost:3000",
+    "Run exploratory QA and verify acceptance criteria for our login form",
+    "Reproduce suspected bug and generate evidence report with Playwright"
+  ]
+}
