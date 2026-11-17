@@ -1,5 +1,9 @@
 # BugHunt AI 🎯
 
+<p align="center">
+  <img src="assets/logo.jpg" alt="BugHunt AI Logo" width="180" style="border-radius: 24px;" />
+</p>
+
 > **Autonomous Ticket-to-Bug QA Agent Plugin for Google Antigravity**  
 > *Developed by [SkyDevLab](https://github.com/SkyDevLab)*
 
