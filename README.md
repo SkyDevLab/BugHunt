@@ -8,9 +8,12 @@
 > *Developed by [SkyDevLab](https://github.com/SkyDevLab)*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Live Site](https://img.shields.io/badge/Live_Docs-GitHub_Pages-blue?logo=github)](https://skydevlab.github.io/BugHunt/)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](package.json)
 [![Playwright](https://img.shields.io/badge/Playwright-Chromium-orange.svg)](https://playwright.dev)
 [![Antigravity Plugin](https://img.shields.io/badge/Antigravity-Plugin%20v1-purple.svg)](plugin.json)
+
+🌐 **Live Documentation & Interactive Demo:** [https://skydevlab.github.io/BugHunt/](https://skydevlab.github.io/BugHunt/)
 
 **BugHunt AI** bridges the gap between issue tickets and verifiable bug reports. Simply paste a Jira or Azure DevOps user story or defect ticket into Google Antigravity, and BugHunt AI autonomously parses requirements, maps acceptance criteria to risk-based test scenarios, drives browser interactions using Playwright, collects live screenshot and telemetry evidence, investigates failure reproducibility, and delivers actionable, developer-ready Markdown defect reports.
 
@@ -111,30 +114,71 @@ BugHunt/
 
 ## 🚀 Installation Guide
 
-### Option A: Workspace Installation (Project-Specific)
-To enable BugHunt AI for a specific project:
-1. Clone the plugin into your repository's `.agents/plugins/` directory:
-   ```bash
-   mkdir -p .agents/plugins
-   git clone https://github.com/SkyDevLab/BugHunt.git .agents/plugins/bughunt-ai
-   cd .agents/plugins/bughunt-ai
-   npm install
-   npx playwright install chromium
-   ```
-2. Restart Antigravity or reopen the workspace folder. Antigravity will automatically detect `bughunt-ai` and load its `ticket-qa` skill.
+### Option 1: Quick Install via Antigravity CLI (Recommended)
+If you have the Antigravity CLI (`agy`) installed:
+```bash
+agy plugin install https://github.com/SkyDevLab/BugHunt
+```
 
-### Option B: Global Machine Installation
-To make BugHunt AI available across all workspaces on your machine:
-1. Clone the plugin into your global Antigravity plugins directory:
-   - **Linux / macOS**: `~/.gemini/config/plugins/bughunt-ai`
-   - **Windows**: `%USERPROFILE%\.gemini\config\plugins\bughunt-ai`
-   ```bash
-   git clone https://github.com/SkyDevLab/BugHunt.git "$HOME/.gemini/config/plugins/bughunt-ai"
-   cd "$HOME/.gemini/config/plugins/bughunt-ai"
-   npm install
-   npx playwright install chromium
-   ```
-2. Restart Antigravity to discover the new global plugin.
+---
+
+### Option 2: Windows Global Machine Installation
+To make BugHunt AI available across all projects on Windows:
+```powershell
+# 1. Clone into your Antigravity global plugins directory
+git clone https://github.com/SkyDevLab/BugHunt.git "$env:USERPROFILE\.gemini\config\plugins\bughunt-ai"
+
+# 2. Install dependencies & Playwright Chromium browser
+cd "$env:USERPROFILE\.gemini\config\plugins\bughunt-ai"
+npm install
+npx playwright install chromium
+```
+*Restart Antigravity* to discover the newly registered global plugin.
+
+---
+
+### Option 3: macOS / Linux Global Machine Installation
+To make BugHunt AI available across all projects on macOS or Linux:
+```bash
+# 1. Clone into your Antigravity global plugins directory
+git clone https://github.com/SkyDevLab/BugHunt.git "$HOME/.gemini/config/plugins/bughunt-ai"
+
+# 2. Install dependencies & Playwright Chromium browser
+cd "$HOME/.gemini/config/plugins/bughunt-ai"
+npm install
+npx playwright install chromium
+```
+*Restart Antigravity* to discover the newly registered global plugin.
+
+---
+
+### Option 4: Workspace Scope Installation (Project-Specific)
+To bundle BugHunt AI directly within a single repository so team members automatically get it:
+```bash
+# 1. From your repository root:
+mkdir -p .agents/plugins
+git clone https://github.com/SkyDevLab/BugHunt.git .agents/plugins/bughunt-ai
+
+# 2. Install dependencies
+cd .agents/plugins/bughunt-ai
+npm install
+npx playwright install chromium
+```
+*Workspace plugins activate automatically* whenever you open that repository in Antigravity.
+
+---
+
+### Option 5: Standalone CLI Runner (No IDE Required)
+You can also run BugHunt AI directly from your terminal in CI/CD or local test scripts:
+```bash
+git clone https://github.com/SkyDevLab/BugHunt.git
+cd BugHunt
+npm install
+npx playwright install chromium
+
+# Run against any ticket file
+node scripts/run-tests.js examples/sample-ticket.md --url http://localhost:3000
+```
 
 ---
 

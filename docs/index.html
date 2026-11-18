@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BugHunt AI — Autonomous Ticket-to-Bug QA Agent for Antigravity</title>
+  <meta name="description" content="BugHunt AI interprets Jira/ADO tickets, explores web apps with Playwright, captures screenshot evidence, reproduces defects, and generates actionable bug reports.">
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
+    .gradient-glow {
+      background: radial-gradient(circle at 50% 20%, rgba(37, 99, 235, 0.15) 0%, rgba(15, 23, 42, 0) 70%);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- Background glow -->
+  <div class="fixed inset-0 gradient-glow pointer-events-none z-0"></div>
+
+  <!-- Navbar -->
+  <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-950/80 border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <img src="assets/logo.jpg" alt="BugHunt AI Logo" class="w-10 h-10 rounded-xl shadow-md border border-blue-500/30 object-cover">
+        <div>
+          <span class="font-bold text-lg text-white tracking-tight flex items-center gap-2">
+            BugHunt AI
+            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">v1.0.0</span>
+          </span>
+          <span class="text-xs text-slate-400 block -mt-1 font-medium">by SkyDevLab</span>
+        </div>
+      </div>
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
+        <a href="#workflow" class="hover:text-white transition">Workflow</a>
+        <a href="#features" class="hover:text-white transition">Features</a>
+        <a href="#demo" class="hover:text-white transition">Interactive Demo</a>
+        <a href="#evidence" class="hover:text-white transition">Evidence Gallery</a>
+        <a href="#install" class="hover:text-white transition">Installation</a>
+      </nav>
+      <div class="flex items-center space-x-3">
+        <a href="https://github.com/SkyDevLab/BugHunt" target="_blank" rel="noopener noreferrer" 
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-white transition shadow-sm">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative z-10 pt-16 pb-20 md:pt-24 md:pb-28 text-center px-4 max-w-5xl mx-auto">
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6">
+      <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+      Autonomous Ticket-to-Bug QA Agent for Antigravity
+    </div>
+
+    <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.15]">
+      Turn User Stories into <br class="hidden sm:inline">
+      <span class="bg-gradient-to-r from-blue-400 via-indigo-300 to-sky-400 bg-clip-text text-transparent">
+        Reproducible Bug Reports
+      </span>
+    </h1>
+
+    <p class="mt-6 text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto font-normal leading-relaxed">
+      Paste a Jira or Azure DevOps ticket into Google Antigravity. BugHunt AI analyzes acceptance criteria, drives Playwright browser exploration, captures screenshot evidence, reproduces failures, and delivers actionable Markdown defect reports.
+    </p>
+
+    <!-- CTAs -->
+    <div class="mt-10 flex flex-wrap justify-center items-center gap-4">
+      <a href="#install" class="px-6 py-3.5 rounded-xl font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-0.5 flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Install Plugin
+      </a>
+      <a href="#demo" class="px-6 py-3.5 rounded-xl font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        View Live Demo
+      </a>
+    </div>
+
+    <!-- Quick Terminal Copy -->
+    <div class="mt-8 max-w-xl mx-auto">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 flex items-center justify-between text-left shadow-xl">
+        <div class="flex items-center space-x-3 overflow-hidden text-xs sm:text-sm font-mono text-slate-300">
+          <span class="text-blue-500 select-none">$</span>
+          <span class="truncate" id="quickInstallCmd">agy plugin install https://github.com/SkyDevLab/BugHunt</span>
+        </div>
+        <button onclick="copyQuickCmd()" id="quickCopyBtn" class="ml-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+          <span id="quickCopyText">Copy</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Workflow Stages -->
+  <section id="workflow" class="py-20 bg-slate-900/50 border-y border-slate-800/80 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-xs font-semibold tracking-wider text-blue-400 uppercase font-mono">End-to-End Pipeline</h2>
+        <p class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">The 6-Stage Autonomous QA Lifecycle</p>
+        <p class="mt-4 text-slate-400">Zero manual test scripts required for standard acceptance criteria validation.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Step 1 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-blue-500/40 transition">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold font-mono mb-4 border border-blue-500/20">01</div>
+          <h3 class="text-lg font-semibold text-white mb-2">Ticket Ingestion</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Ingests raw tickets from Jira, Azure DevOps, Markdown files, or chat prompts. Extracts acceptance criteria, URLs, environment details, and domain entities.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-blue-500/40 transition">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold font-mono mb-4 border border-blue-500/20">02</div>
+          <h3 class="text-lg font-semibold text-white mb-2">Risk-Based Test Planning</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Formulates deterministic test matrices covering positive acceptance, malformed negative inputs, required boundaries, refresh persistence, and HTTP 500 resilience.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-blue-500/40 transition">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold font-mono mb-4 border border-blue-500/20">03</div>
+          <h3 class="text-lg font-semibold text-white mb-2">Playwright Exploration</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Spins up headless Chromium. Discovers accessible roles and stable selectors. Strictly constrained within the user-authorized origin scope via ScopeGuard.
+          </p>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-blue-500/40 transition">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold font-mono mb-4 border border-blue-500/20">04</div>
+          <h3 class="text-lg font-semibold text-white mb-2">Evidence Capture</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Whenever an assertion fails, captures full-page screenshot artifacts <em>before</em> resetting state. Records sanitized console logs and failed network traces.
+          </p>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-blue-500/40 transition">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold font-mono mb-4 border border-blue-500/20">05</div>
+          <h3 class="text-lg font-semibold text-white mb-2">Multi-Pass Reproduction</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Executes 2 additional re-runs on failing scenarios. Deterministically classifies outcomes into <strong>Confirmed</strong> (100% reproducible) or <strong>Suspected</strong> (flaky race).
+          </p>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-blue-500/40 transition">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold font-mono mb-4 border border-blue-500/20">06</div>
+          <h3 class="text-lg font-semibold text-white mb-2">Developer-Ready Report</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Outputs self-contained Markdown defect reports and structured JSON summaries with numbered reproduction steps and embedded relative screenshot links.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Demo Simulator -->
+  <section id="demo" class="py-20 relative z-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <h2 class="text-xs font-semibold tracking-wider text-blue-400 uppercase font-mono">Live Simulation</h2>
+        <p class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">See BugHunt AI in Action</p>
+        <p class="mt-4 text-slate-400">Experience how the agent analyzes a ticket and identifies real defects against a live profile form.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Ticket Input Card -->
+        <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+          <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+            <span class="text-xs font-mono font-semibold uppercase text-slate-400 flex items-center gap-2">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Input Ticket
+            </span>
+            <span class="text-xs text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 font-mono">Jira Format</span>
+          </div>
+
+          <pre class="text-xs font-mono text-slate-300 bg-slate-950 p-4 rounded-xl border border-slate-800/80 overflow-x-auto leading-relaxed">
+<strong class="text-white">Title:</strong> User profile update
+<strong class="text-white">Description:</strong> Users can update name and email in Settings.
+
+<strong class="text-white">Acceptance criteria:</strong>
+• Valid changes are saved.
+• Invalid emails are rejected.
+• Changes persist after refreshing.
+• API failures display an appropriate error.
+
+<strong class="text-white">Target URL:</strong> http://localhost:3000
+<strong class="text-white">Environment:</strong> local development</pre>
+
+          <button onclick="runSimulation()" id="simulateBtn" class="mt-4 w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span id="simulateBtnText">Simulate BugHunt Execution</span>
+          </button>
+        </div>
+
+        <!-- Simulation Output Console -->
+        <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+          <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+            <span class="text-xs font-mono font-semibold uppercase text-slate-400 flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              Execution Console & Report Preview
+            </span>
+            <div id="simBadge" class="text-xs px-2 py-0.5 rounded font-mono bg-slate-800 text-slate-400 border border-slate-700">Idle</div>
+          </div>
+
+          <div id="consoleOutput" class="space-y-3 font-mono text-xs text-slate-300 bg-slate-950 p-4 rounded-xl border border-slate-800/80 min-h-[300px] max-h-[360px] overflow-y-auto">
+            <p class="text-slate-500 italic">// Click "Simulate BugHunt Execution" to watch Playwright explore, assert, and generate evidence...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Evidence Gallery -->
+  <section id="evidence" class="py-20 bg-slate-900/50 border-y border-slate-800/80 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-xs font-semibold tracking-wider text-blue-400 uppercase font-mono">Verifiable Proof</h2>
+        <p class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Screenshot Artifacts Captured Live</p>
+        <p class="mt-4 text-slate-400">Captured automatically at the exact moment of Playwright assertion failure before browser state reset.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Defect 1 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl hover:border-red-500/50 transition flex flex-col">
+          <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-red-400 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-red-400"></span> [BUG-01] Major
+            </span>
+            <span class="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">TC-02</span>
+          </div>
+          <div class="p-4 flex-1">
+            <h4 class="text-sm font-semibold text-white mb-1">Malformed Email Accepted</h4>
+            <p class="text-xs text-slate-400 mb-4">Input `"invalid-user-format"` accepted with success alert rather than throwing a validation error.</p>
+            <div class="rounded-lg overflow-hidden border border-slate-800 bg-slate-950">
+              <img src="assets/TC-02_step-4_invalid_email_accepted_1794936241714.png" alt="Defect TC-02" class="w-full h-auto object-cover hover:scale-105 transition duration-300">
+            </div>
+          </div>
+          <div class="px-4 py-3 bg-slate-950/60 border-t border-slate-800/80 text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+            ✓ 3 of 3 attempts failed (100% Confirmed)
+          </div>
+        </div>
+
+        <!-- Defect 2 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl hover:border-red-500/50 transition flex flex-col">
+          <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-red-400 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-red-400"></span> [BUG-02] Critical
+            </span>
+            <span class="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">TC-03</span>
+          </div>
+          <div class="p-4 flex-1">
+            <h4 class="text-sm font-semibold text-white mb-1">Changes Lost on Refresh</h4>
+            <p class="text-xs text-slate-400 mb-4">Saved profile updates revert to initial values immediately after browser page reload.</p>
+            <div class="rounded-lg overflow-hidden border border-slate-800 bg-slate-950">
+              <img src="assets/TC-03_step-5_persistence_failed_refresh_1794936246773.png" alt="Defect TC-03" class="w-full h-auto object-cover hover:scale-105 transition duration-300">
+            </div>
+          </div>
+          <div class="px-4 py-3 bg-slate-950/60 border-t border-slate-800/80 text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+            ✓ 3 of 3 attempts failed (100% Confirmed)
+          </div>
+        </div>
+
+        <!-- Defect 3 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl hover:border-red-500/50 transition flex flex-col">
+          <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+            <span class="text-xs font-mono font-bold text-red-400 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-red-400"></span> [BUG-03] Major
+            </span>
+            <span class="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">TC-04</span>
+          </div>
+          <div class="p-4 flex-1">
+            <h4 class="text-sm font-semibold text-white mb-1">Silent Server 500 Failure</h4>
+            <p class="text-xs text-slate-400 mb-4">HTTP 500 error logged to console without surfacing a visible error banner to the user.</p>
+            <div class="rounded-lg overflow-hidden border border-slate-800 bg-slate-950">
+              <img src="assets/TC-04_step-4_api_failure_unhandled_1794936250436.png" alt="Defect TC-04" class="w-full h-auto object-cover hover:scale-105 transition duration-300">
+            </div>
+          </div>
+          <div class="px-4 py-3 bg-slate-950/60 border-t border-slate-800/80 text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+            ✓ 3 of 3 attempts failed (100% Confirmed)
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Installation Guide Section -->
+  <section id="install" class="py-20 relative z-10">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <h2 class="text-xs font-semibold tracking-wider text-blue-400 uppercase font-mono">Setup & Deployment</h2>
+        <p class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Installation Guide</p>
+        <p class="mt-4 text-slate-400">Install BugHunt AI into your Antigravity environment in under 60 seconds.</p>
+      </div>
+
+      <!-- Tab Buttons -->
+      <div class="flex flex-wrap justify-center gap-2 mb-6" id="installTabs">
+        <button onclick="switchTab('cli')" id="tab-cli" class="px-4 py-2 rounded-xl text-sm font-medium bg-blue-600 text-white transition">
+          Antigravity CLI (agy)
+        </button>
+        <button onclick="switchTab('windows')" id="tab-windows" class="px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+          Windows PowerShell
+        </button>
+        <button onclick="switchTab('unix')" id="tab-unix" class="px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+          macOS / Linux
+        </button>
+        <button onclick="switchTab('workspace')" id="tab-workspace" class="px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+          Workspace Scope
+        </button>
+      </div>
+
+      <!-- Tab Contents -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+        <!-- Tab 1: CLI -->
+        <div id="content-cli" class="space-y-4">
+          <p class="text-sm text-slate-300">Run the standard Antigravity CLI plugin installer directly against the public GitHub repository:</p>
+          <div class="relative group">
+            <pre class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs sm:text-sm font-mono text-blue-300 overflow-x-auto"><code>agy plugin install https://github.com/SkyDevLab/BugHunt</code></pre>
+            <button onclick="copyToClipboard('agy plugin install https://github.com/SkyDevLab/BugHunt', this)" class="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 font-mono transition">Copy</button>
+          </div>
+        </div>
+
+        <!-- Tab 2: Windows -->
+        <div id="content-windows" class="space-y-4 hidden">
+          <p class="text-sm text-slate-300">Clone into your global Antigravity plugins directory (`%USERPROFILE%\.gemini\config\plugins\`):</p>
+          <div class="relative group">
+            <pre class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs sm:text-sm font-mono text-emerald-300 overflow-x-auto"><code>git clone https://github.com/SkyDevLab/BugHunt.git "$env:USERPROFILE\.gemini\config\plugins\bughunt-ai"
+cd "$env:USERPROFILE\.gemini\config\plugins\bughunt-ai"
+npm install
+npx playwright install chromium</code></pre>
+            <button onclick="copyToClipboard('git clone https://github.com/SkyDevLab/BugHunt.git &quot;$env:USERPROFILE\\.gemini\\config\\plugins\\bughunt-ai&quot; && cd &quot;$env:USERPROFILE\\.gemini\\config\\plugins\\bughunt-ai&quot; && npm install && npx playwright install chromium', this)" class="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 font-mono transition">Copy</button>
+          </div>
+          <p class="text-xs text-slate-500 italic">Restart Antigravity after cloning to discover the new global plugin.</p>
+        </div>
+
+        <!-- Tab 3: macOS / Linux -->
+        <div id="content-unix" class="space-y-4 hidden">
+          <p class="text-sm text-slate-300">Clone into your user config directory (`~/.gemini/config/plugins/`):</p>
+          <div class="relative group">
+            <pre class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs sm:text-sm font-mono text-amber-300 overflow-x-auto"><code>git clone https://github.com/SkyDevLab/BugHunt.git "$HOME/.gemini/config/plugins/bughunt-ai"
+cd "$HOME/.gemini/config/plugins/bughunt-ai"
+npm install
+npx playwright install chromium</code></pre>
+            <button onclick="copyToClipboard('git clone https://github.com/SkyDevLab/BugHunt.git &quot;$HOME/.gemini/config/plugins/bughunt-ai&quot; && cd &quot;$HOME/.gemini/config/plugins/bughunt-ai&quot; && npm install && npx playwright install chromium', this)" class="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 font-mono transition">Copy</button>
+          </div>
+          <p class="text-xs text-slate-500 italic">Restart Antigravity after cloning to discover the new global plugin.</p>
+        </div>
+
+        <!-- Tab 4: Workspace -->
+        <div id="content-workspace" class="space-y-4 hidden">
+          <p class="text-sm text-slate-300">Bundle BugHunt AI within a specific project repository using `.agents/plugins/`:</p>
+          <div class="relative group">
+            <pre class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs sm:text-sm font-mono text-purple-300 overflow-x-auto"><code>mkdir -p .agents/plugins
+git clone https://github.com/SkyDevLab/BugHunt.git .agents/plugins/bughunt-ai
+cd .agents/plugins/bughunt-ai
+npm install
+npx playwright install chromium</code></pre>
+            <button onclick="copyToClipboard('mkdir -p .agents/plugins && git clone https://github.com/SkyDevLab/BugHunt.git .agents/plugins/bughunt-ai && cd .agents/plugins/bughunt-ai && npm install && npx playwright install chromium', this)" class="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs border border-slate-700 font-mono transition">Copy</button>
+          </div>
+          <p class="text-xs text-slate-500 italic">Workspace-scoped plugins activate automatically whenever you open this directory in Antigravity.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security & Policies -->
+  <section class="py-16 bg-slate-900/30 border-t border-slate-800/80 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+        <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800">
+          <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center mb-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <h4 class="font-semibold text-white text-sm mb-1">ScopeGuard Boundaries</h4>
+          <p class="text-xs text-slate-400">Strictly locked to the user-authorized origin URL. Any cross-domain redirects or external probes are halted immediately.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <h4 class="font-semibold text-white text-sm mb-1">Zero-Fabrication Guarantee</h4>
+          <p class="text-xs text-slate-400">Never invents or simulates tests or logs. If a service is offline, scenarios are marked as Blocked rather than false bugs.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-slate-900/80 border border-slate-800">
+          <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center mb-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          </div>
+          <h4 class="font-semibold text-white text-sm mb-1">Credential Redaction</h4>
+          <p class="text-xs text-slate-400">Bearer tokens, passwords, and JWTs are automatically stripped (`[REDACTED]`) from logs, reports, and screenshots.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-10 bg-slate-950 text-slate-400 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <img src="assets/logo.jpg" alt="Logo" class="w-6 h-6 rounded-md">
+        <span class="text-slate-200 font-semibold">BugHunt AI</span>
+        <span>&bull;</span>
+        <span>Open Source MIT License &copy; 2026 SkyDevLab</span>
+      </div>
+      <div class="flex items-center space-x-6">
+        <a href="https://github.com/SkyDevLab/BugHunt" target="_blank" class="hover:text-white transition">GitHub Repository</a>
+        <a href="https://github.com/SkyDevLab/BugHunt/issues" target="_blank" class="hover:text-white transition">Issues</a>
+        <a href="https://github.com/SkyDevLab/BugHunt/blob/main/LICENSE" target="_blank" class="hover:text-white transition">License</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script for interactivity -->
+  <script>
+    function copyQuickCmd() {
+      const text = document.getElementById('quickInstallCmd').innerText;
+      navigator.clipboard.writeText(text);
+      const btnText = document.getElementById('quickCopyText');
+      btnText.innerText = 'Copied!';
+      setTimeout(() => { btnText.innerText = 'Copy'; }, 2000);
+    }
+
+    function copyToClipboard(text, btn) {
+      navigator.clipboard.writeText(text);
+      const original = btn.innerText;
+      btn.innerText = 'Copied!';
+      setTimeout(() => { btn.innerText = original; }, 2000);
+    }
+
+    function switchTab(tabId) {
+      ['cli', 'windows', 'unix', 'workspace'].forEach(id => {
+        const content = document.getElementById('content-' + id);
+        const tab = document.getElementById('tab-' + id);
+        if (id === tabId) {
+          content.classList.remove('hidden');
+          tab.className = 'px-4 py-2 rounded-xl text-sm font-medium bg-blue-600 text-white transition';
+        } else {
+          content.classList.add('hidden');
+          tab.className = 'px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+        }
+      });
+    }
+
+    async function runSimulation() {
+      const btn = document.getElementById('simulateBtn');
+      const btnText = document.getElementById('simulateBtnText');
+      const badge = document.getElementById('simBadge');
+      const con = document.getElementById('consoleOutput');
+
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+      btnText.innerText = 'Testing in progress...';
+      badge.className = 'text-xs px-2 py-0.5 rounded font-mono bg-blue-500/20 text-blue-400 border border-blue-500/30';
+      badge.innerText = 'Running Playwright';
+
+      con.innerHTML = '';
+      const logs = [
+        { text: '[BugHunt] Initializing ScopeGuard for http://localhost:3000...', color: 'text-slate-400' },
+        { text: '[BugHunt] Parsed Ticket: "User profile update" (4 Acceptance Criteria)', color: 'text-blue-400' },
+        { text: '[BugHunt] Preflight: Application reachable at http://localhost:3000 (HTTP 200)', color: 'text-emerald-400' },
+        { text: '[BugHunt] Running TC-01: Verify valid profile details are saved... PASSED', color: 'text-emerald-400' },
+        { text: '[BugHunt] Running TC-02: Verify malformed email addresses are rejected... FAILED', color: 'text-red-400' },
+        { text: '  ↳ Captured screenshot: TC-02_step-4_invalid_email_accepted.png', color: 'text-amber-400' },
+        { text: '  ↳ Multi-pass reproduction: 3 of 3 attempts failed → CONFIRMED DEFECT', color: 'text-red-300 font-bold' },
+        { text: '[BugHunt] Running TC-03: Verify profile data persists after refresh... FAILED', color: 'text-red-400' },
+        { text: '  ↳ Captured screenshot: TC-03_step-5_persistence_failed.png', color: 'text-amber-400' },
+        { text: '  ↳ Multi-pass reproduction: 3 of 3 attempts failed → CONFIRMED DEFECT', color: 'text-red-300 font-bold' },
+        { text: '[BugHunt] Running TC-04: Verify API 500 displays error notification... FAILED', color: 'text-red-400' },
+        { text: '  ↳ Captured screenshot: TC-04_step-4_api_failure_unhandled.png', color: 'text-amber-400' },
+        { text: '  ↳ Multi-pass reproduction: 3 of 3 attempts failed → CONFIRMED DEFECT', color: 'text-red-300 font-bold' },
+        { text: '--------------------------------------------------------------', color: 'text-slate-600' },
+        { text: 'Summary: 4 Scenarios | 1 Passed | 3 Confirmed | 0 Blocked', color: 'text-white font-bold' },
+        { text: 'Report written: bughunt-reports/run-latest/report.md', color: 'text-emerald-400' }
+      ];
+
+      for (const log of logs) {
+        await new Promise(r => setTimeout(r, 260));
+        const p = document.createElement('p');
+        p.className = log.color;
+        p.innerText = log.text;
+        con.appendChild(p);
+        con.scrollTop = con.scrollHeight;
+      }
+
+      badge.className = 'text-xs px-2 py-0.5 rounded font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      badge.innerText = 'Complete (3 Defects Confirmed)';
+      btn.disabled = false;
+      btn.classList.remove('opacity-50');
+      btnText.innerText = 'Re-Run Simulation';
+    }
+  </script>
+</body>
+</html>
