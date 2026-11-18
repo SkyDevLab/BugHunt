@@ -10,6 +10,7 @@ class BrowserExplorer {
   constructor(options = {}) {
     this.headless = options.headless !== undefined ? options.headless : true;
     this.scopeGuard = options.scopeGuard;
+    this.storageState = options.storageState || null;
     this.browser = null;
     this.context = null;
   }
@@ -20,9 +21,16 @@ class BrowserExplorer {
         headless: this.headless
       });
     }
-    this.context = await this.browser.newContext({
+    
+    const contextOptions = {
       viewport: { width: 1280, height: 800 }
-    });
+    };
+
+    if (this.storageState) {
+      contextOptions.storageState = this.storageState;
+    }
+
+    this.context = await this.browser.newContext(contextOptions);
     return this;
   }
 

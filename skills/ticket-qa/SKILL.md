@@ -37,8 +37,11 @@ Extract the structured parameters from the user's prompt or ticket file:
 
 *Helper tool*:
 ```bash
-node scripts/run-tests.js <path-to-ticket> [--url <url>]
+node scripts/run-tests.js <path-to-ticket> [--url <url>] [--storage-state <auth.json>]
 ```
+
+#### Authenticated & Session-Protected URLs:
+If testing features behind a login gate, BugHunt AI auto-detects `auth.json`, `storageState.json`, or `.auth/state.json` in the workspace root. Playwright injects the session cookies and tokens before navigation, allowing direct testing of dashboard, profile, and settings screens without login redirects.
 
 ### Step 2: Formulate Risk-Based Scenarios
 Deconstruct the acceptance criteria into testable categories:

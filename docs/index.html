@@ -62,9 +62,9 @@
       </div>
       <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
         <a href="#workflow" class="hover:text-white transition">Workflow</a>
-        <a href="#features" class="hover:text-white transition">Features</a>
-        <a href="#demo" class="hover:text-white transition">Interactive Demo</a>
+        <a href="#demo" class="hover:text-white transition">Live Demo</a>
         <a href="#evidence" class="hover:text-white transition">Evidence Gallery</a>
+        <a href="#sessions" class="hover:text-white transition">Auth & Sessions</a>
         <a href="#install" class="hover:text-white transition">Installation</a>
       </nav>
       <div class="flex items-center space-x-3">
@@ -313,6 +313,69 @@
           </div>
           <div class="px-4 py-3 bg-slate-950/60 border-t border-slate-800/80 text-[11px] font-mono text-emerald-400 flex items-center gap-1">
             ✓ 3 of 3 attempts failed (100% Confirmed)
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sessioned & Authenticated URLs Section -->
+  <section id="sessions" class="py-20 relative z-10 border-b border-slate-800/80">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <h2 class="text-xs font-semibold tracking-wider text-emerald-400 uppercase font-mono">Authentication & State</h2>
+        <p class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Testing Sessioned & Protected URLs</p>
+        <p class="mt-4 text-slate-400">
+          In real web applications, features live behind login screens. BugHunt AI natively supports Playwright <code class="text-blue-400">storageState</code> so browser tests run fully authenticated.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
+        <div class="space-y-6">
+          <div class="flex items-start gap-4">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-500/20 font-mono">1</div>
+            <div>
+              <h3 class="text-base font-semibold text-white">Save Login State Once (15s)</h3>
+              <p class="text-sm text-slate-400 mt-1">Run Playwright's built-in session recorder against your login URL:</p>
+              <pre class="mt-2 text-xs font-mono text-emerald-300 bg-slate-950 p-3 rounded-lg border border-slate-800 overflow-x-auto"><code>npx playwright codegen --save-storage=auth.json http://localhost:3000/login</code></pre>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-sm shrink-0 border border-blue-500/20 font-mono">2</div>
+            <div>
+              <h3 class="text-base font-semibold text-white">Auto-Detected in Antigravity</h3>
+              <p class="text-sm text-slate-400 mt-1">
+                Drop <code class="text-blue-400">auth.json</code> into your project root. BugHunt AI automatically discovers it, injects cookies & session tokens into all browser contexts, and executes tests inside the authenticated session!
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold text-sm shrink-0 border border-purple-500/20 font-mono">3</div>
+            <div>
+              <h3 class="text-base font-semibold text-white">CLI Session Flag</h3>
+              <p class="text-sm text-slate-400 mt-1">When running from terminal or CI:</p>
+              <pre class="mt-2 text-xs font-mono text-purple-300 bg-slate-950 p-3 rounded-lg border border-slate-800 overflow-x-auto"><code>node scripts/run-tests.js ticket.md --storage-state auth.json</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 text-xs font-mono space-y-4 shadow-inner">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3 text-slate-400">
+            <span>🔒 Session State Flow</span>
+            <span class="text-emerald-400 font-bold">auth.json</span>
+          </div>
+          <div class="space-y-2 text-slate-300">
+            <p class="text-slate-500">// Preserved storageState contents:</p>
+            <p>• <span class="text-blue-400">cookies:</span> session_id, jwt_token, csrf</p>
+            <p>• <span class="text-blue-400">localStorage:</span> user_profile, access_token</p>
+            <p>• <span class="text-blue-400">origins:</span> http://localhost:3000</p>
+            <div class="p-3 mt-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+              ✓ Zero login redirects.<br>
+              ✓ Tests protected dashboard & settings directly.<br>
+              ✓ Secrets automatically redacted from bug reports.
+            </div>
           </div>
         </div>
       </div>

@@ -40,10 +40,25 @@ async function runBugHunt(ticketInput, options = {}) {
     baseDir: options.outputDir
   });
 
+  // Resolve storageState for sessioned / authenticated URLs
+  let resolvedStorageState = options.storageState || null;
+  if (!resolvedStorageState) {
+    const candidatePaths = ['auth.json', 'storageState.json', '.auth/state.json', '.auth/user.json'];
+    for (const candidate of candidatePaths) {
+      const fullPath = path.resolve(process.cwd(), candidate);
+      if (fs.existsSync(fullPath)) {
+        resolvedStorageState = fullPath;
+        console.log(`[BugHunt] Auto-detected session storage state: ${candidate}`);
+        break;
+      }
+    }
+  }
+
   // 5. Initialize Browser Explorer
   const explorer = new BrowserExplorer({
     headless: options.headless !== undefined ? options.headless : true,
-    scopeGuard
+    scopeGuard,
+    storageState: resolvedStorageState
   });
 
   const reproducer = new FailureReproducer({

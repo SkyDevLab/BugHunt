@@ -25,6 +25,8 @@ Usage:
 Options:
   --url <url>              Application URL override (e.g., http://localhost:3000)
   --output <dir>           Output directory for reports (default: ./bughunt-reports)
+  --storage-state <file>   Path to Playwright storageState auth JSON (for sessioned URLs)
+  --auth <file>            Alias for --storage-state
   --reproduce-runs <num>   Number of additional reproduction passes for failures (default: 2)
   --headful                Run browser in visible mode (default: headless)
   --help, -h               Show this help message
@@ -32,6 +34,7 @@ Options:
 Examples:
   node scripts/run-tests.js examples/sample-ticket.md
   node scripts/run-tests.js examples/sample-ticket.md --url http://localhost:3000
+  node scripts/run-tests.js examples/sample-ticket.md --storage-state auth.json
 `);
     process.exit(0);
   }
@@ -39,6 +42,7 @@ Examples:
   let ticketInput = null;
   let url = null;
   let outputDir = null;
+  let storageState = null;
   let reproduceRuns = 2;
   let headless = true;
 
@@ -48,6 +52,8 @@ Examples:
       url = args[++i];
     } else if (arg === '--output' && args[i + 1]) {
       outputDir = args[++i];
+    } else if ((arg === '--storage-state' || arg === '--auth') && args[i + 1]) {
+      storageState = args[++i];
     } else if (arg === '--reproduce-runs' && args[i + 1]) {
       reproduceRuns = parseInt(args[++i], 10);
     } else if (arg === '--headful') {
@@ -70,6 +76,7 @@ Examples:
     const result = await runBugHunt(ticketInput, {
       url,
       outputDir,
+      storageState,
       reproduceRuns,
       headless
     });

@@ -206,6 +206,30 @@ Antigravity will invoke the `ticket-qa` skill, run the Playwright browser tests,
 
 ---
 
+## 🔐 Testing Sessioned & Authenticated URLs
+
+In real-world web applications, features under test often live behind a login page (e.g. `/dashboard`, `/account/settings`). Since Playwright launches a fresh browser context, unauthenticated sessions will be redirected to login.
+
+BugHunt AI solves this with **first-class Playwright `storageState` session support**:
+
+### Step 1: Capture your logged-in session (one-time, 15 seconds)
+Run Playwright's built-in session recorder against your login URL:
+```bash
+npx playwright codegen --save-storage=auth.json http://localhost:3000/login
+```
+*Log in normally with your test credentials and close the browser.* Playwright automatically saves your cookies, session tokens, and localStorage into `auth.json`.
+
+### Step 2: Run BugHunt with your session state
+- **In Antigravity**: Place `auth.json` (or `storageState.json`) in your project root. BugHunt AI **auto-detects** it and injects the session into all browser tests.
+- **Via CLI**: Pass the `--storage-state` flag:
+  ```bash
+  node scripts/run-tests.js examples/sample-ticket.md --storage-state auth.json
+  ```
+
+All Playwright exploration and assertions will now run fully authenticated without hitting login redirects!
+
+---
+
 ## 💻 CLI Usage
 
 BugHunt AI can also be run standalone from your terminal or CI/CD pipelines without launching the IDE:
